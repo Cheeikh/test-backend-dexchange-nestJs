@@ -6,7 +6,7 @@ if (process.env.DATABASE_URL_TEST) {
 }
 
 // Global setup before all tests
-beforeAll(async () => {
+beforeAll(() => {
   // Push Prisma schema to test database
   try {
     execSync('pnpm prisma db push --skip-generate --accept-data-loss', {
@@ -24,7 +24,7 @@ beforeAll(async () => {
 });
 
 // Global teardown after all tests
-afterAll(async () => {
+afterAll(() => {
   // Optionally clean up test data or drop test database
   // This can be extended based on your needs
   console.log('✓ Test cleanup completed');
