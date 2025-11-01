@@ -125,7 +125,7 @@ describe('Transfers (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('items');
-          res.body.items.forEach((item) => {
+          res.body.items.forEach((item: { status: string }) => {
             expect(item.status).toBe('PENDING');
           });
         });
