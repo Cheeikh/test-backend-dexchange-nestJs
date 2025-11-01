@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database (optional for local development)
+  # If using Neon DB, you can comment this out
+  postgres:
+    image: postgres:16-alpine
+    container_name: transfer-api-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: transfer_user
+      POSTGRES_PASSWORD: transfer_password
+      POSTGRES_DB: transfer_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U transfer_user -d transfer_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transfer-api-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # For local development with docker postgres
+      # DATABASE_URL: postgresql://transfer_user:transfer_password@postgres:5432/transfer_db?schema=public
+      # For Neon DB - use your actual Neon DB connection string
+      DATABASE_URL: ${DATABASE_URL}
+      API_KEYS: ${API_KEYS}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-XOF}
+      FEE_PERCENTAGE: ${FEE_PERCENTAGE:-0.8}
+      MIN_FEE: ${MIN_FEE:-100}
+      MAX_FEE: ${MAX_FEE:-1500}
+      SUCCESS_RATE: ${SUCCESS_RATE:-0.7}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Uncomment to run migrations and seed on startup
+    # command: >
+    #   sh -c "
+    #     npx prisma migrate deploy &&
+    #     npx prisma db seed &&
+    #     node dist/main
+    #   "
+
+volumes:
+  postgres_data:
+    driver: local

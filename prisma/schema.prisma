@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransferStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELED
+}
+
+enum TransferChannel {
+  WAVE
+  ORANGE_MONEY
+  FREE_MONEY
+  MOOV_MONEY
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("api_keys")
+}
+
+model Transfer {
+  id           String          @id @default(uuid())
+  reference    String          @unique
+  amount       Float
+  currency     String          @default("XOF")
+  channel      TransferChannel
+  status       TransferStatus  @default(PENDING)
+  fees         Float
+  total        Float
+  recipientPhone String
+  recipientName  String
+  metadata     Json?
+  providerRef  String?
+  errorCode    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  auditLogs    AuditLog[]
+
+  @@map("transfers")
+  @@index([status])
+  @@index([channel])
+  @@index([createdAt])
+  @@index([reference])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  transferId String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  transfer   Transfer? @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+  @@index([transferId])
+  @@index([action])
+  @@index([createdAt])
+}
