@@ -59,7 +59,7 @@ Une API RESTful complète pour la gestion de transferts d'argent avec support de
 ### 1. Cloner le dépôt
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Cheeikh/test-backend-dexchange-nestJs.git
 cd test-backend-dexchange-nestJs
 ```
 
